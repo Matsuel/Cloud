@@ -1,0 +1,36 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "go run github.com/steebchen/prisma-client-go"
+}
+
+model User {
+    id        String   @id @default(cuid())
+    email     String   @unique
+    name      String
+    password  String
+    createdAt DateTime @default(now())
+    files     File[]   @relation
+}
+
+model File {
+    id        String       @id @default(cuid())
+    name      String
+    path      String
+    createdAt DateTime     @default(now())
+    updatedAt DateTime     @updatedAt
+    userId    String
+    user      User         @relation(fields: [userId], references: [id])
+    shared    SharedFile[] @relation
+}
+
+model SharedFile {
+    id           String   @id @default(cuid())
+    fileId       String
+    whoCanSeeId  String[]
+    whoCanEditId String[]
+    file         File     @relation(fields: [fileId], references: [id])
+}
